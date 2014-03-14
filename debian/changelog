@@ -1,5 +1,5 @@
-python-designateclient (1.0.0-1) unstable; urgency=low
+python-designateclient (1.0.0-1) experimental; urgency=low
 
-  * Initial release (Closes: #XXXXXX)
+  * Initial release (Closes: #731407)
 
  -- Thomas Goirand <zigo@debian.org>  Thu, 05 Dec 2013 15:53:48 +0800
