@@ -1,4 +1,4 @@
-python-designateclient (1.0.0-1) experimental; urgency=low
+python-designateclient (1.0.2-1) experimental; urgency=low
 
   * Initial release (Closes: #731407)
 
