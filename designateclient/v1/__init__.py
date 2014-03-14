@@ -15,8 +15,9 @@
 # under the License.
 import requests
 from stevedore import extension
-from designateclient import exceptions
+
 from designateclient.auth import KeystoneAuth
+from designateclient import exceptions
 
 
 class Client(object):
@@ -42,16 +43,21 @@ class Client(object):
         if auth_url:
             auth = KeystoneAuth(auth_url, username, password, tenant_id,
                                 tenant_name, token, service_type,
-                                endpoint_type, sudo_tenant_id)
+                                endpoint_type, region_name, sudo_tenant_id)
             if endpoint:
-                self.endpoint = endpoint
+                self.endpoint = endpoint.rstrip('/')
             else:
                 self.endpoint = auth.get_url()
         elif endpoint:
             auth = None
-            self.endpoint = endpoint
+            self.endpoint = endpoint.rstrip('/')
         else:
             raise ValueError('Either an endpoint or auth_url must be supplied')
+
+        # NOTE(kiall): As we're in the Version 1 client, we ensure we're
+        #              pointing at the version 1 API.
+        if not self.endpoint.endswith('v1'):
+            self.endpoint = "%s/v1" % self.endpoint
 
         self.insecure = insecure
 

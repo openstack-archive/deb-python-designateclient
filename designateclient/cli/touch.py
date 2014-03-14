@@ -21,18 +21,17 @@ from designateclient.cli import base
 LOG = logging.getLogger(__name__)
 
 
-class PingCommand(base.GetCommand):
-    """ Ping a service on a given host """
+class TouchDomainCommand(base.Command):
+    """ Touch a single Domain """
 
     def get_parser(self, prog_name):
-        parser = super(PingCommand, self).get_parser(prog_name)
+        parser = super(TouchDomainCommand, self).get_parser(prog_name)
 
-        parser.add_argument('--service', help="Service Name (e.g. central)",
-                            required=True)
-        parser.add_argument('--host', help="Hostname", required=True)
+        parser.add_argument('domain_id', help="Domain ID")
 
         return parser
 
     def execute(self, parsed_args):
-        return self.client.diagnostics.ping(parsed_args.service,
-                                            parsed_args.host)
+        self.client.touch.domain(parsed_args.domain_id)
+
+        LOG.info('Domain touched successfully')

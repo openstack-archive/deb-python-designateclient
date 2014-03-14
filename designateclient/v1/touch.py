@@ -1,6 +1,6 @@
-# Copyright 2012 Managed I.T.
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
-# Author: Kiall Mac Innes <kiall@managedit.ie>
+# Author: Kiall Mac Innes <kiall@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,12 +16,9 @@
 from designateclient.v1.base import Controller
 
 
-class DiagnosticsController(Controller):
-    def ping(self, service, host):
+class TouchController(Controller):
+    def domain(self, domain_id):
         """
-        Ping a service on a given host
+        Touch a single Domain
         """
-        response = self.client.get('/diagnostics/ping/%s/%s' %
-                                   (service, host))
-
-        return response.json()
+        self.client.post('/domains/%s/touch' % domain_id)

@@ -13,8 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from urlparse import urlparse
+
 from requests.auth import AuthBase
+from urlparse import urlparse
 
 from keystoneclient.v2_0.client import Client
 
@@ -22,7 +23,7 @@ from keystoneclient.v2_0.client import Client
 class KeystoneAuth(AuthBase):
     def __init__(self, auth_url, username=None, password=None, tenant_id=None,
                  tenant_name=None, token=None, service_type=None,
-                 endpoint_type=None, sudo_tenant_id=None):
+                 endpoint_type=None, region_name=None, sudo_tenant_id=None):
         self.auth_url = str(auth_url).rstrip('/')
         self.username = username
         self.password = password
@@ -39,6 +40,7 @@ class KeystoneAuth(AuthBase):
 
         self.service_type = service_type
         self.endpoint_type = endpoint_type
+        self.region_name = region_name
 
         self.refresh_auth()
 
@@ -63,17 +65,30 @@ class KeystoneAuth(AuthBase):
                       auth_url=self.auth_url,
                       insecure=insecure)
 
-    def get_endpoints(self, service_type=None, endpoint_type=None):
+    def get_endpoints(self, service_type=None, endpoint_type=None,
+                      region_name=None):
         return self.service_catalog.get_endpoints(
             service_type=service_type,
-            endpoint_type=endpoint_type)
+            endpoint_type=endpoint_type,
+            region_name=region_name)
 
-    def get_url(self, service_type=None, endpoint_type=None):
+    def get_url(self, service_type=None, endpoint_type=None, region_name=None):
         service_type = service_type or self.service_type
         endpoint_type = endpoint_type or self.endpoint_type
-        endpoints = self.get_endpoints(service_type, endpoint_type)
+        region_name = region_name or self.region_name
 
-        return endpoints[service_type][0][endpoint_type].rstrip('/')
+        endpoints = self.get_endpoints(service_type, endpoint_type,
+                                       region_name)
+
+        url = endpoints[service_type][0][endpoint_type]
+
+        # NOTE(kiall): The Version 1 API is the only API that has ever included
+        #              the version number in the endpoint. Thus, it's safe to
+        #              simply remove it if present.
+        url = url.rstrip('/')
+        if url.endswith('/v1'):
+            url = url[:-3]
+        return url
 
     def refresh_auth(self):
         ks = self.get_ksclient()
