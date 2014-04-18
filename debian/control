@@ -16,6 +16,7 @@ Build-Depends-Indep: python-cliff (>= 1.4.3),
                      python-keystoneclient (>= 1:0.4.1),
                      python-mox,
                      python-requests,
+                     python-sphinx,
                      python-stevedore,
                      python-subunit (>= 0.0.18),
                      subunit (>= 0.0.18),
@@ -34,7 +35,8 @@ Depends: python-cliff (>= 1.4.3),
          python-requests,
          python-stevedore,
          ${misc:Depends},
-         ${python:Depends}
+         ${python:Depends},
+         ${sphinxdoc:Depends}
 Description: client library for the OpenStack Designate API
  Designate provides DNSaaS services for OpenStack. It provides a multi-tenant
  REST API for domain & record management. It is Integrated with Keystone for
