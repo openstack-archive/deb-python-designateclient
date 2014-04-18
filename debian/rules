@@ -26,11 +26,11 @@ ifeq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS)))
 endif
 
 override_dh_installman:
-ifeq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS)))
-	PYTHONPATH=. sphinx-build -b man doc/source doc/build/man
-	mv doc/build/man/designateclient.1 doc/build/man/designate.1
-	dh_installman -O--buildsystem=python_distutils
-endif
+#ifeq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS)))
+#	PYTHONPATH=. sphinx-build -b man doc/source doc/build/man
+#	mv doc/build/man/designateclient.1 doc/build/man/designate.1
+#	dh_installman -O--buildsystem=python_distutils
+#endif
 
 override_dh_clean:
 	dh_clean -O--buildsystem=python_distutils
