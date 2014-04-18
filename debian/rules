@@ -9,5 +9,12 @@ export OSLO_PACKAGE_VERSION=$(VERSION)
 
 override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-	python setup.py testr
+	rm -rf .testrepository
+	testr init
+	set -e && \
+		TEMP_REZ=`mktemp -t` && \
+		PYTHONPATH=$(CURDIR) testr run --subunit | tee $$TEMP_REZ | subunit2pyunit ; \
+		cat $$TEMP_REZ | subunit-filter -s --no-passthrough | subunit-stats ; \
+		rm -f $$TEMP_REZ ;
+	testr slowest
 endif

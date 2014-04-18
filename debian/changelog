@@ -3,6 +3,7 @@ python-designateclient (1.0.3-1) unstable; urgency=medium
   * New upstream release.
   * Uploading to unstable.
   * Removed pep8 and pyflakes from build-depends.
+  * Using testr and subunit correctly.
 
  -- Thomas Goirand <zigo@debian.org>  Mon, 14 Apr 2014 01:48:47 +0800
 
