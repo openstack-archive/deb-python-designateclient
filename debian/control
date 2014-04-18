@@ -17,7 +17,8 @@ Build-Depends-Indep: python-cliff (>= 1.4.3),
                      python-mox,
                      python-requests,
                      python-stevedore,
-                     python-subunit,
+                     python-subunit (>= 0.0.18),
+                     subunit (>= 0.0.18),
                      testrepository (>= 0.0.17)
 Standards-Version: 3.9.4
 Homepage: https://github.com/stackforge/python-designateclient
