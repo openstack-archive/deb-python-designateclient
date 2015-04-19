@@ -4,40 +4,39 @@ Priority: extra
 Maintainer: PKG OpenStack <openstack-devel@lists.alioth.debian.org>
 Uploaders: Julien Danjou <acid@debian.org>,
            Thomas Goirand <zigo@debian.org>,
-           Ghe Rivero <ghe.rivero@stackops.com>
+           Ghe Rivero <ghe.rivero@stackops.com>,
 Build-Depends: debhelper (>= 9),
-               openstack-pkg-tools,
+               dh-python,
+               openstack-pkg-tools (>= 23~),
                python-all (>= 2.6.6-3~),
-               python-pbr (>= 0.6)
-Build-Depends-Indep: python-cliff (>= 1.4.3),
-                     python-coverage (>= 3.6),
-                     python-hacking (>= 0.8.0),
+               python-pbr,
+               python-sphinx,
+Build-Depends-Indep: python-cliff,
+                     python-coverage,
+                     python-hacking,
                      python-jsonschema,
-                     python-keystoneclient (>= 1:0.6.0),
-                     python-mox,
-                     python-requests (>= 1.1),
-                     python-sphinx,
-                     python-stevedore (>= 0.14),
-                     python-subunit (>= 0.0.18),
-                     subunit (>= 0.0.18),
-                     testrepository (>= 0.0.17)
-Standards-Version: 3.9.4
-Homepage: https://github.com/stackforge/python-designateclient
+                     python-keystoneclient,
+                     python-requests,
+                     python-stevedore,
+                     subunit,
+                     testrepository,
+Standards-Version: 3.9.6
 Vcs-Git: git://anonscm.debian.org/openstack/python-designateclient.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=openstack/python-designateclient.git;a=summary
+Homepage: https://github.com/openstack/python-designateclient
 
 Package: python-designateclient
 Architecture: all
-Pre-Depends: dpkg (>= 1.15.6~)
-Depends: python-cliff (>= 1.4.3),
+Pre-Depends: dpkg (>= 1.15.6~),
+Depends: python-cliff,
          python-jsonschema,
-         python-keystoneclient (>= 1:0.6.0),
-         python-pbr (>= 0.6),
-         python-requests (>= 1.1),
-         python-stevedore (>= 0.14),
+         python-keystoneclient,
+         python-pbr,
+         python-requests,
+         python-stevedore,
          ${misc:Depends},
          ${python:Depends},
-         ${sphinxdoc:Depends}
+         ${sphinxdoc:Depends},
 Description: client library for the OpenStack Designate API
  Designate provides DNSaaS services for OpenStack. It provides a multi-tenant
  REST API for domain & record management. It is Integrated with Keystone for
