@@ -20,8 +20,8 @@ from designateclient.cli import base
 LOG = logging.getLogger(__name__)
 
 
-class SyncAllCommand(base.Command):
-    """ Sync Everything """
+class SyncAllCommand(base.DeleteCommand):
+    """Sync Everything"""
 
     def execute(self, parsed_args):
         self.client.sync.sync_all()
@@ -29,8 +29,8 @@ class SyncAllCommand(base.Command):
         LOG.info('Synchronization of all domains scheduled')
 
 
-class SyncDomainCommand(base.Command):
-    """ Sync a single Domain """
+class SyncDomainCommand(base.DeleteCommand):
+    """Sync a single Domain"""
 
     def get_parser(self, prog_name):
         parser = super(SyncDomainCommand, self).get_parser(prog_name)
@@ -45,8 +45,8 @@ class SyncDomainCommand(base.Command):
         LOG.info('Synchronization of domain scheduled')
 
 
-class SyncRecordCommand(base.Command):
-    """ Sync a single Record """
+class SyncRecordCommand(base.DeleteCommand):
+    """Sync a single Record"""
 
     def get_parser(self, prog_name):
         parser = super(SyncRecordCommand, self).get_parser(prog_name)

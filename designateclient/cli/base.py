@@ -14,37 +14,44 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+
 from cliff.command import Command as CliffCommand
 from cliff.lister import Lister
 from cliff.show import ShowOne
+import six
+
 from designateclient import exceptions
 from designateclient import utils
 from designateclient.v1 import Client
 
 
+@six.add_metaclass(abc.ABCMeta)
 class Command(CliffCommand):
-    __metaclass__ = abc.ABCMeta
 
     def run(self, parsed_args):
-        client_args = {
+        kwargs = {
             'endpoint': self.app.options.os_endpoint,
-            'auth_url': self.app.options.os_auth_url,
             'username': self.app.options.os_username,
+            'user_id': self.app.options.os_user_id,
+            'user_domain_id': self.app.options.os_user_domain_id,
+            'user_domain_name': self.app.options.os_user_domain_name,
             'password': self.app.options.os_password,
-            'tenant_id': self.app.options.os_tenant_id,
             'tenant_name': self.app.options.os_tenant_name,
+            'tenant_id': self.app.options.os_tenant_id,
+            'domain_name': self.app.options.os_domain_name,
+            'domain_id': self.app.options.os_domain_id,
+            'project_name': self.app.options.os_project_name,
+            'project_id': self.app.options.os_project_id,
+            'project_domain_name': self.app.options.os_project_domain_name,
+            'project_domain_id': self.app.options.os_project_domain_id,
+            'auth_url': self.app.options.os_auth_url,
             'token': self.app.options.os_token,
+            'endpoint_type': self.app.options.os_endpoint_type,
             'service_type': self.app.options.os_service_type,
-            'region_name': self.app.options.os_region_name,
-            'sudo_tenant_id': self.app.options.sudo_tenant_id,
-            'insecure': self.app.options.insecure
+            'insecure': self.app.options.insecure,
         }
 
-        if client_args['endpoint'] is None and client_args['auth_url'] is None:
-            raise ValueError('Either the --os-endpoint or --os-auth-url '
-                             'argument must be supplied')
-
-        self.client = Client(**client_args)
+        self.client = Client(**kwargs)
 
         try:
             return super(Command, self).run(parsed_args)
