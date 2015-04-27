@@ -1,3 +1,9 @@
+python-designateclient (1.1.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 27 Apr 2015 22:34:19 +0000
+
 python-designateclient (1.0.3-1) unstable; urgency=medium
 
   * New upstream release.
