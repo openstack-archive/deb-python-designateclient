@@ -21,6 +21,7 @@ import traceback
 from cliff.app import App
 from cliff.commandmanager import CommandManager
 
+from designateclient import utils
 from designateclient.version import version_info as version
 
 
@@ -153,6 +154,11 @@ class DesignateShell(App):
                             help=("Defaults to env[OS_DNS_SERVICE_TYPE], or "
                                   "'dns'"))
 
+        parser.add_argument('--os-cacert',
+                            default=env('OS_CACERT'),
+                            help=('CA certificate bundle file. Defaults to '
+                                  'env[OS_CACERT]'))
+
         parser.add_argument('--insecure', action='store_true',
                             help="Explicitly allow 'insecure' SSL requests")
 
@@ -201,6 +207,28 @@ class DesignateShell(App):
         if self.options.debug:
             # --debug forces traceback
             self.dump_stack_trace = True
+
+    def initialize_app(self, argv):
+        super(DesignateShell, self).initialize_app(argv)
+        self.session = utils.get_session(
+            auth_url=self.options.os_auth_url,
+            endpoint=self.options.os_endpoint,
+            domain_id=self.options.os_domain_id,
+            domain_name=self.options.os_domain_name,
+            project_id=self.options.os_project_id or self.options.os_tenant_id,
+            project_name=(self.options.os_project_name or
+                          self.options.os_tenant_name),
+            project_domain_name=self.options.os_project_domain_name,
+            project_domain_id=self.options.os_project_domain_id,
+            username=self.options.os_username,
+            user_id=self.options.os_user_id,
+            password=self.options.os_password,
+            user_domain_id=self.options.os_user_domain_id,
+            user_domain_name=self.options.os_user_domain_name,
+            token=self.options.os_token,
+            insecure=self.options.insecure,
+            cacert=self.options.os_cacert,
+        )
 
     def run(self, argv):
         try:
