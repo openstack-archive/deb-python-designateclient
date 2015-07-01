@@ -18,6 +18,7 @@ import abc
 from cliff.command import Command as CliffCommand
 from cliff.lister import Lister
 from cliff.show import ShowOne
+from keystoneclient import exceptions as ks_exceptions
 import six
 
 from designateclient import exceptions
@@ -31,7 +32,9 @@ class Command(CliffCommand):
         self.client = Client(
             region_name=self.app.options.os_region_name,
             service_type=self.app.options.os_service_type,
-            session=self.app.session)
+            session=self.app.session,
+            all_tenants=self.app.options.all_tenants,
+            edit_managed=self.app.options.edit_managed)
 
         try:
             return super(Command, self).run(parsed_args)
@@ -48,6 +51,8 @@ class Command(CliffCommand):
                 values.append(e.errors)
 
             self.error_output(parsed_args, columns, values)
+        except ks_exceptions.EndpointNotFound:
+            self.app.log.error("No endpoint was found. Missing credentials?")
 
             return 1
 
@@ -81,6 +86,10 @@ class Command(CliffCommand):
     def take_action(self, parsed_args):
         results = self.execute(parsed_args)
         return self.post_execute(results)
+
+    def find_resourceid_by_name_or_id(self, resource_plural, name_or_id):
+        resource_client = getattr(self.client, resource_plural)
+        return utils.find_resourceid_by_name_or_id(resource_client, name_or_id)
 
 
 class ListCommand(Command, Lister):

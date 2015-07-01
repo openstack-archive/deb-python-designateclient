@@ -16,8 +16,9 @@
 
 import json
 import os
+import uuid
 
-
+from debtcollector import removals
 from keystoneclient.auth.identity import generic
 from keystoneclient.auth import token_endpoint
 from keystoneclient import session as ks_session
@@ -97,10 +98,15 @@ def get_columns(data):
     return list(columns)
 
 
+@removals.removed_kwarg('all_tenants', removal_version='1.3.0')
+@removals.removed_kwarg('edit_managed', removal_version='1.3.0')
 def get_session(auth_url, endpoint, domain_id, domain_name, project_id,
                 project_name, project_domain_name, project_domain_id, username,
                 user_id, password, user_domain_id, user_domain_name, token,
-                insecure, cacert):
+                insecure, cacert, all_tenants=False, edit_managed=False):
+    # NOTE: all_tenants and edit_managed are here for backwards compat
+    #       reasons, do not add additional modifiers here.
+
     session = ks_session.Session()
 
     # Build + Attach Authentication Plugin
@@ -139,4 +145,30 @@ def get_session(auth_url, endpoint, domain_id, domain_name, project_id,
     else:
         session.verify = cacert
 
+    # NOTE: all_tenants and edit_managed are here for backwards compat
+    #       reasons, do not add additional modifiers here.
+    session.all_tenants = all_tenants
+    session.edit_managed = edit_managed
+
     return session
+
+
+def find_resourceid_by_name_or_id(resource_client, name_or_id):
+    """Find resource id from its id or name."""
+    try:
+        # Try to return a uuid
+        return str(uuid.UUID(name_or_id))
+    except ValueError:
+        # Not a uuid => asume it is resource name
+        pass
+
+    resources = resource_client.list()
+    candidate_ids = [r['id'] for r in resources if r.get('name') == name_or_id]
+    if not candidate_ids:
+        raise exceptions.ResourceNotFound(
+            'Could not find resource with name "%s"' % name_or_id)
+    elif len(candidate_ids) > 1:
+        str_ids = ','.join(candidate_ids)
+        raise exceptions.NoUniqueMatch(
+            'Multiple resources with name "%s": %s' % (name_or_id, str_ids))
+    return candidate_ids[0]

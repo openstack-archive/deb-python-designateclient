@@ -162,6 +162,13 @@ class DesignateShell(App):
         parser.add_argument('--insecure', action='store_true',
                             help="Explicitly allow 'insecure' SSL requests")
 
+        parser.add_argument('--all-tenants', action='store_true',
+                            help="Allows to list all domains from all tenants")
+
+        parser.add_argument('--edit-managed', action='store_true',
+                            help='Allows to edit records that are marked as '
+                            'managed')
+
         return parser
 
     def configure_logging(self):
@@ -227,7 +234,7 @@ class DesignateShell(App):
             user_domain_name=self.options.os_user_domain_name,
             token=self.options.os_token,
             insecure=self.options.insecure,
-            cacert=self.options.os_cacert,
+            cacert=self.options.os_cacert
         )
 
     def run(self, argv):

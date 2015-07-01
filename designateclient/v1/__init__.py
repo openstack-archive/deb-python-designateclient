@@ -32,7 +32,7 @@ class Client(object):
                  project_domain_id=None, auth_url=None, token=None,
                  endpoint_type='publicURL', region_name=None,
                  service_type='dns', insecure=False, session=None,
-                 cacert=None):
+                 cacert=None, all_tenants=None, edit_managed=None):
         """
         :param endpoint: Endpoint URL
         :param token: A token instead of username / password
@@ -62,8 +62,21 @@ class Client(object):
                 user_domain_name=user_domain_name,
                 token=token,
                 insecure=insecure,
-                cacert=cacert,
+                cacert=cacert
             )
+
+        # NOTE: all_tenants and edit_managed are pulled from the session for
+        #       backwards compat reasons, do not pull additional modifiers from
+        #       here. Once removed, the kwargs above should default to False.
+        if all_tenants is None:
+            self.all_tenants = getattr(session, 'all_tenants', False)
+        else:
+            self.all_tenants = all_tenants
+
+        if edit_managed is None:
+            self.edit_managed = getattr(session, 'edit_managed', False)
+        else:
+            self.edit_managed = edit_managed
 
         # Since we have to behave nicely like a legacy client/bindings we use
         # an adapter around the session to not modify it's state.
@@ -97,6 +110,10 @@ class Client(object):
         kw['raise_exc'] = False
         kw.setdefault('headers', {})
         kw['headers'].setdefault('Content-Type', 'application/json')
+        if self.all_tenants:
+            kw['headers'].update({'X-Auth-All-Projects': 'true'})
+        if self.edit_managed:
+            kw['headers'].update({'X-Designate-Edit-Managed-Records': 'true'})
 
         # Trigger the request
         response = func(*args, **kw)
