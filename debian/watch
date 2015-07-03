@@ -1,3 +1,3 @@
 version=3
-opts="uversionmangle=s/%7E/~/" https://launchpad.net/python-designateclient/+download https://launchpad.net/python-designateclient/.*/.*/.*/python-designateclient-(.*)\.tar\.gz
-http://tarballs.openstack.org/python-designateclient python-designateclient-(\d.*).tar.gz
+opts=uversionmangle=s/(rc|a|b|c)/~$1/ \
+http://pypi.debian.net/python-designateclient/python-designateclient-(.+)\.(?:zip|tgz|tbz|txz|(?:tar\.(?:gz|bz2|xz)))
