@@ -1,3 +1,4 @@
+from __future__ import print_function
 import logging
 
 from keystoneclient.auth.identity import generic
@@ -14,7 +15,7 @@ auth = generic.Password(
     password=shell.env('OS_PASSWORD'),
     tenant_name=shell.env('OS_TENANT_NAME'))
 
-session = keystone_session.Session(auth=auth)
+session = keystone_session.Session(auth=auth, timeout=10)
 
 client = client.Client(session=session)
 
@@ -33,4 +34,4 @@ while fetch:
     pages.append(page)
 
 for page in pages:
-    print page
+    print(page)

@@ -19,10 +19,12 @@ import os
 import uuid
 
 from debtcollector import removals
+from keystoneclient import adapter
 from keystoneclient.auth.identity import generic
 from keystoneclient.auth import token_endpoint
 from keystoneclient import session as ks_session
 import pkg_resources
+import six
 
 from designateclient import exceptions
 
@@ -49,7 +51,7 @@ def load_schema(version, name, package=None):
     schema_string = resource_string('schemas', version, '%s.json' % name,
                                     package=package)
 
-    return json.loads(schema_string)
+    return json.loads(schema_string.decode('utf-8'))
 
 
 def get_item_properties(item, fields, mixed_case_fields=[], formatters={}):
@@ -94,7 +96,8 @@ def get_columns(data):
     def _seen(col):
         columns.add(str(col))
 
-    map(lambda item: map(_seen, item.keys()), data)
+    six.moves.map(lambda item: six.moves.map(_seen,
+                  list(six.iterkeys(item))), data)
     return list(columns)
 
 
@@ -172,3 +175,22 @@ def find_resourceid_by_name_or_id(resource_client, name_or_id):
         raise exceptions.NoUniqueMatch(
             'Multiple resources with name "%s": %s' % (name_or_id, str_ids))
     return candidate_ids[0]
+
+
+class AdapterWithTimeout(adapter.Adapter):
+    """adapter.Adapter wraps around a Session.
+    The user can pass a timeout keyword that will apply only to
+    the Designate Client, in order:
+        - timeout keyword passed to request()
+        - timeout keyword passed to AdapterWithTimeout()
+        - timeout attribute on keystone session
+    """
+    def __init__(self, *args, **kw):
+        self.timeout = kw.pop('timeout', None)
+        super(self.__class__, self).__init__(*args, **kw)
+
+    def request(self, *args, **kwargs):
+        if self.timeout is not None:
+            kwargs.setdefault('timeout', self.timeout)
+
+        return super(AdapterWithTimeout, self).request(*args, **kwargs)

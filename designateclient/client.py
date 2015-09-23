@@ -15,9 +15,9 @@
 # under the License.
 import abc
 import json
-from urllib import urlencode
 
 import six
+from six.moves.urllib import parse
 from stevedore import extension
 
 from designateclient import exceptions
@@ -37,7 +37,7 @@ class Controller(object):
         if limit is not None:
             params['limit'] = limit
 
-        q = urlencode(params) if params else ''
+        q = parse.urlencode(params) if params else ''
         return '%(url)s%(params)s' % {
             'url': url,
             'params': '?%s' % q
@@ -124,6 +124,6 @@ def Client(version, *args, **kwargs):  # noqa
     versions = get_versions()
     if version not in versions:
         msg = 'Version %s is not supported, use one of (%s)' % (
-            version, versions.keys())
+            version, list(six.iterkeys(versions)))
         raise exceptions.UnsupportedVersion(msg)
     return versions[version](*args, **kwargs)

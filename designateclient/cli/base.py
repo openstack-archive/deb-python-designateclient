@@ -51,8 +51,11 @@ class Command(CliffCommand):
                 values.append(e.errors)
 
             self.error_output(parsed_args, columns, values)
-        except ks_exceptions.EndpointNotFound:
-            self.app.log.error("No endpoint was found. Missing credentials?")
+        except ks_exceptions.EndpointNotFound as e:
+            self.app.log.error('No endpoint was found. You must provide a'
+                               'username or user id via --os-username, '
+                               '--os-user-id, env[OS_USERNAME] or '
+                               'env[OS_USER_ID]')
 
             return 1
 
@@ -106,17 +109,17 @@ class ListCommand(Command, Lister):
 
 class GetCommand(Command, ShowOne):
     def post_execute(self, results):
-        return results.keys(), results.values()
+        return list(six.iterkeys(results)), list(six.itervalues(results))
 
 
 class CreateCommand(Command, ShowOne):
     def post_execute(self, results):
-        return results.keys(), results.values()
+        return list(six.iterkeys(results)), list(six.itervalues(results))
 
 
 class UpdateCommand(Command, ShowOne):
     def post_execute(self, results):
-        return results.keys(), results.values()
+        return list(six.iterkeys(results)), list(six.itervalues(results))
 
 
 class DeleteCommand(Command, ShowOne):
