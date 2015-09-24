@@ -2,7 +2,7 @@ python-designateclient (1.5.0-1) UNRELEASED; urgency=medium
 
   [ Corey Bryant ]
   * New upstream release.
-    - d/control: Align (Build-)Depends with upstream.
+  * d/control: Align (Build-)Depends with upstream.
 
   [ James Page ]
   * Update watch file to use Debian pypi redirector.
