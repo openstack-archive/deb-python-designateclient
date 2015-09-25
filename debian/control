@@ -34,7 +34,6 @@ Homepage: https://github.com/openstack/python-designateclient
 
 Package: python-designateclient
 Architecture: all
-Pre-Depends: dpkg (>= 1.15.6~),
 Depends: python-cliff (>= 1.14.0),
          python-debtcollector,
          python-jsonschema,

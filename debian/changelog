@@ -1,4 +1,4 @@
-python-designateclient (1.5.0-1) UNRELEASED; urgency=medium
+python-designateclient (1.5.0-1) experimental; urgency=medium
 
   [ Corey Bryant ]
   * New upstream release.
@@ -7,7 +7,10 @@ python-designateclient (1.5.0-1) UNRELEASED; urgency=medium
   [ James Page ]
   * Update watch file to use Debian pypi redirector.
 
- -- Corey Bryant <corey.bryant@canonical.com>  Wed, 23 Sep 2015 16:28:50 -0400
+  [ Thomas Goirand ]
+  * Removed Pre-Depends: dpkg (>= 1.15.6~).
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 25 Sep 2015 11:48:03 +0000
 
 python-designateclient (1.1.1-1) unstable; urgency=medium
 
