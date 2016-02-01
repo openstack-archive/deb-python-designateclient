@@ -1,3 +1,9 @@
+python-designateclient (1.5.0-3) unstable; urgency=medium
+
+  * Added Python 3 support.
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 01 Feb 2016 15:51:58 +0800
+
 python-designateclient (1.5.0-2) unstable; urgency=medium
 
   * Uploading to unstable.

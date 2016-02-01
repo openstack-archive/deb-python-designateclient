@@ -11,6 +11,9 @@ Build-Depends: debhelper (>= 9),
                python-pbr (>= 1.8),
                python-setuptools,
                python-sphinx,
+               python3-all,
+               python3-pbr (>= 1.8),
+               python3-setuptools,
 Build-Depends-Indep: python-cliff (>= 1.14.0),
                      python-coverage,
                      python-debtcollector,
@@ -25,6 +28,18 @@ Build-Depends-Indep: python-cliff (>= 1.14.0),
                      python-requests-mock (>= 0.6.0),
                      python-six (>= 1.9.0),
                      python-stevedore (>= 1.5.0),
+                     python3-cliff (>= 1.14.0),
+                     python3-debtcollector,
+                     python3-jsonschema,
+                     python3-keystoneclient (>= 1:0.11.1),
+                     python3-mock (>= 1.2),
+                     python3-oslo.utils (>= 2.0.0),
+                     python3-oslotest (>= 1.10.0),
+                     python3-requests,
+                     python3-requests-mock (>= 0.6.0),
+                     python3-six (>= 1.9.0),
+                     python3-stevedore (>= 1.5.0),
+                     python3-subunit,
                      subunit,
                      testrepository,
 Standards-Version: 3.9.6
@@ -46,7 +61,7 @@ Depends: python-cliff (>= 1.14.0),
          ${misc:Depends},
          ${python:Depends},
          ${sphinxdoc:Depends},
-Description: client library for the OpenStack Designate API
+Description: client library for the OpenStack Designate API - Python 2.7
  Designate provides DNSaaS services for OpenStack. It provides a multi-tenant
  REST API for domain & record management. It is Integrated with Keystone for
  authentication, and provides a framework in place to integrate with Nova and
@@ -58,3 +73,53 @@ Description: client library for the OpenStack Designate API
  .
  Installing this package gets you a shell command, that you can use to
  interact with Designate's API.
+ .
+ This package provides the Python 2.7 module.
+
+Package: python3-designateclient
+Architecture: all
+Depends: python3-cliff (>= 1.14.0),
+         python3-debtcollector,
+         python3-jsonschema,
+         python3-keystoneclient (>= 1:0.11.1),
+         python3-oslo.utils (>= 2.0.0),
+         python3-pbr (>= 1.8),
+         python3-requests,
+         python3-six (>= 1.9.0),
+         python3-stevedore (>= 1.5.0),
+         ${misc:Depends},
+         ${python3:Depends},
+Description: client library for the OpenStack Designate API - Python 3.x
+ Designate provides DNSaaS services for OpenStack. It provides a multi-tenant
+ REST API for domain & record management. It is Integrated with Keystone for
+ authentication, and provides a framework in place to integrate with Nova and
+ Neutron notifications (for auto-generated records). Designate supports
+ PowerDNS and Bind9 out of the box.
+ .
+ This is a client for the OpenStack Designate API. There's a Python API
+ (the "designateclient" module), and a command-line script ("designate").
+ .
+ Installing this package gets you a shell command, that you can use to
+ interact with Designate's API.
+ .
+ This package provides the Python 3.x module.
+
+Package: python-designateclient-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends},
+         ${sphinxdoc:Depends},
+Description: client library for the OpenStack Designate API - doc
+ Designate provides DNSaaS services for OpenStack. It provides a multi-tenant
+ REST API for domain & record management. It is Integrated with Keystone for
+ authentication, and provides a framework in place to integrate with Nova and
+ Neutron notifications (for auto-generated records). Designate supports
+ PowerDNS and Bind9 out of the box.
+ .
+ This is a client for the OpenStack Designate API. There's a Python API
+ (the "designateclient" module), and a command-line script ("designate").
+ .
+ Installing this package gets you a shell command, that you can use to
+ interact with Designate's API.
+ .
+ This package provides the documentation.
