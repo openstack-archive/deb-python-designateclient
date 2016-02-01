@@ -43,8 +43,8 @@ Build-Depends-Indep: python-cliff (>= 1.14.0),
                      subunit,
                      testrepository,
 Standards-Version: 3.9.6
-Vcs-Git: git://anonscm.debian.org/openstack/python-designateclient.git
-Vcs-Browser: http://anonscm.debian.org/gitweb/?p=openstack/python-designateclient.git;a=summary
+Vcs-Git: https://anonscm.debian.org/openstack/python-designateclient.git
+Vcs-Browser: https://anonscm.debian.org/cgit/openstack/python-designateclient.git
 Homepage: https://github.com/openstack/python-designateclient
 
 Package: python-designateclient
