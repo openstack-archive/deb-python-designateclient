@@ -20,6 +20,8 @@ override_dh_auto_install:
 			--root $(CURDIR)/debian/python3-designateclient; \
 	done
 	rm -f $(CURDIR)/debian/python*/usr/lib/python*/dist-packages/*.pth
+	mv $(CURDIR)/debian/python-designateclient/usr/bin/designate $(CURDIR)/debian/python-designateclient/usr/bin/python2-designate
+	mv $(CURDIR)/debian/python3-designateclient/usr/bin/designate $(CURDIR)/debian/python3-designateclient/usr/bin/python3-designate
 
 override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))

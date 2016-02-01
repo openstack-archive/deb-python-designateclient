@@ -5,5 +5,5 @@ Abstract: Sphinx documentation for Designate Client
 Section: Programming/Python
 
 Format: HTML
-Index: /usr/share/doc/python-designateclient/html/index.html
-Files: /usr/share/doc/python-designateclient/html/*
+Index: /usr/share/doc/python-designateclient-doc/html/index.html
+Files: /usr/share/doc/python-designateclient-doc/html/*
