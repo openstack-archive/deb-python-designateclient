@@ -1,3 +1,9 @@
+python-designateclient (1.5.0-4) unstable; urgency=medium
+
+  * Fix upgrade from Jessie by adding Breaks+Replaces (Closes: #814523).
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 17 Feb 2016 04:38:17 +0000
+
 python-designateclient (1.5.0-3) unstable; urgency=medium
 
   * Added Python 3 support.

@@ -109,6 +109,8 @@ Architecture: all
 Section: doc
 Depends: ${misc:Depends},
          ${sphinxdoc:Depends},
+Breaks: python-designateclient (<= 1.5.0-3~)
+Replaces: python-designateclient (<= 1.5.0-3~)
 Description: client library for the OpenStack Designate API - doc
  Designate provides DNSaaS services for OpenStack. It provides a multi-tenant
  REST API for domain & record management. It is Integrated with Keystone for
