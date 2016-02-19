@@ -1,3 +1,9 @@
+python-designateclient (2.0.0-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- David Della Vecchia <ddv@canonical.com>  Fri, 19 Feb 2016 14:10:39 -0500
+
 python-designateclient (1.5.0-4) unstable; urgency=medium
 
   * Fix upgrade from Jessie by adding Breaks+Replaces (Closes: #814523).
