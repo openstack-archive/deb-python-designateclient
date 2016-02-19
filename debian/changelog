@@ -1,6 +1,7 @@
 python-designateclient (2.0.0-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * d/control: Align depends with upstream.
 
  -- David Della Vecchia <ddv@canonical.com>  Fri, 19 Feb 2016 14:10:39 -0500
 
