@@ -23,6 +23,7 @@ from openstackclient.common import exceptions as osc_exc
 import six
 
 from designateclient import utils
+from designateclient.v2.utils import get_all
 
 LOG = logging.getLogger(__name__)
 
@@ -40,7 +41,14 @@ class ListZonesCommand(lister.Lister):
     def get_parser(self, prog_name):
         parser = super(ListZonesCommand, self).get_parser(prog_name)
 
+        parser.add_argument('--name', help="Zone Name", required=False)
+        parser.add_argument('--email', help="Zone Email", required=False)
         parser.add_argument('--type', help="Zone Type", required=False)
+        parser.add_argument('--ttl', help="Time To Live (Seconds)",
+                            required=False)
+        parser.add_argument('--description', help="Description",
+                            required=False)
+        parser.add_argument('--status', help="Zone Status", required=False)
 
         return parser
 
@@ -51,7 +59,22 @@ class ListZonesCommand(lister.Lister):
         if parsed_args.type is not None:
             criterion["type"] = parsed_args.type
 
-        data = client.zones.list(criterion=criterion)
+        if parsed_args.name is not None:
+            criterion["name"] = parsed_args.name
+
+        if parsed_args.ttl is not None:
+            criterion["ttl"] = parsed_args.ttl
+
+        if parsed_args.description is not None:
+            criterion["description"] = parsed_args.description
+
+        if parsed_args.email is not None:
+            criterion["email"] = parsed_args.email
+
+        if parsed_args.status is not None:
+            criterion["status"] = parsed_args.status
+
+        data = get_all(client.zones.list, criterion)
 
         cols = self.columns
         return cols, (utils.get_item_properties(s, cols) for s in data)
@@ -73,7 +96,7 @@ class ShowZoneCommand(show.ShowOne):
         data = client.zones.get(parsed_args.id)
 
         _format_zone(data)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class CreateZoneCommand(show.ShowOne):
@@ -115,13 +138,13 @@ class CreateZoneCommand(show.ShowOne):
         else:
             msg = "Type %s is not supported. Please choose between " \
                 "PRIMARY or SECONDARY"
-            raise osc_exc.CommandError(msg)
+            raise osc_exc.CommandError(msg % parsed_args.type)
 
         data = client.zones.create(
             parsed_args.name, parsed_args.type, **payload)
 
         _format_zone(data)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class SetZoneCommand(show.ShowOne):
@@ -131,7 +154,6 @@ class SetZoneCommand(show.ShowOne):
         parser = super(SetZoneCommand, self).get_parser(prog_name)
 
         parser.add_argument('id', help="Zone ID")
-        parser.add_argument('--name', help="Zone Name")
         parser.add_argument('--email', help="Zone Email")
         parser.add_argument('--ttl', type=int, help="Time To Live (Seconds)")
         description_group = parser.add_mutually_exclusive_group()
@@ -148,9 +170,6 @@ class SetZoneCommand(show.ShowOne):
         data = {}
 
         # TODO(kiall): API needs updating.. this get is silly
-        if parsed_args.name:
-            data['name'] = parsed_args.name
-
         if parsed_args.email:
             data['email'] = parsed_args.email
 
@@ -167,7 +186,7 @@ class SetZoneCommand(show.ShowOne):
 
         updated = client.zones.update(parsed_args.id, data)
         _format_zone(updated)
-        return zip(*sorted(six.iteritems(updated)))
+        return six.moves.zip(*sorted(six.iteritems(updated)))
 
 
 class DeleteZoneCommand(command.Command):
@@ -232,7 +251,7 @@ class AbandonZoneCommand(command.Command):
 
         client.zones.abandon(parsed_args.id)
 
-        LOG.info("Z %(zone_id)s abandoned" %
+        LOG.info("Z %(zone_id)s abandoned",
                  {"zone_id": parsed_args.id})
 
 
@@ -250,7 +269,7 @@ class AXFRZoneCommand(command.Command):
 
         client.zones.axfr(parsed_args.id)
 
-        LOG.info("Scheduled AXFR for zone %(zone_id)s" %
+        LOG.info("Scheduled AXFR for zone %(zone_id)s",
                  {"zone_id": parsed_args.id})
 
 
@@ -264,8 +283,7 @@ class CreateTransferRequestCommand(show.ShowOne):
         parser.add_argument('zone_id', help="Zone ID to transfer.",)
         parser.add_argument(
             '--target-project-id',
-            help="Target Project ID to transfer to.",
-            required=True)
+            help="Target Project ID to transfer to.")
         parser.add_argument('--description', help="Description")
 
         return parser
@@ -276,11 +294,11 @@ class CreateTransferRequestCommand(show.ShowOne):
         data = client.zone_transfers.create_request(
             parsed_args.zone_id, parsed_args.target_project_id,
             parsed_args.description)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class ListTransferRequestsCommand(lister.Lister):
-    """List zone transfer requests"""
+    """List Zone Transfer Requests"""
 
     columns = ['id', 'zone_id', 'zone_name', 'project_id',
                'target_project_id', 'status', 'key']
@@ -301,12 +319,12 @@ class ListTransferRequestsCommand(lister.Lister):
 
 
 class ShowTransferRequestCommand(show.ShowOne):
-    """Show zonet transfer details"""
+    """Show Zone Transfer Request Details"""
 
     def get_parser(self, prog_name):
         parser = super(ShowTransferRequestCommand, self).get_parser(prog_name)
 
-        parser.add_argument('id', help="Zone Tranfer ID")
+        parser.add_argument('id', help="Zone Tranfer Request ID")
 
         return parser
 
@@ -315,16 +333,16 @@ class ShowTransferRequestCommand(show.ShowOne):
 
         data = client.zone_transfers.get_request(parsed_args.id)
 
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class SetTransferRequestCommand(command.Command):
-    """Set Transfer"""
+class SetTransferRequestCommand(show.ShowOne):
+    """Set a Zone Transfer Request"""
 
     def get_parser(self, prog_name):
         parser = super(SetTransferRequestCommand, self).get_parser(prog_name)
 
-        parser.add_argument('id', help="Zone Transfer ID")
+        parser.add_argument('id', help="Zone Transfer Request ID")
         description_group = parser.add_mutually_exclusive_group()
         description_group.add_argument('--description', help="Description")
         description_group.add_argument('--no-description', action='store_true')
@@ -342,15 +360,16 @@ class SetTransferRequestCommand(command.Command):
             data['description'] = parsed_args.description
 
         updated = client.zone_transfers.update_request(parsed_args.id, data)
-        return zip(*sorted(six.iteritems(updated)))
+        return six.moves.zip(*sorted(six.iteritems(updated)))
 
 
 class DeleteTransferRequestCommand(command.Command):
+    """Delete a Zone Transfer Request"""
     def get_parser(self, prog_name):
         parser = super(DeleteTransferRequestCommand, self).get_parser(
             prog_name)
 
-        parser.add_argument('id', help="Zone Transfer ID")
+        parser.add_argument('id', help="Zone Transfer Request ID")
 
         return parser
 
@@ -359,10 +378,10 @@ class DeleteTransferRequestCommand(command.Command):
 
         client.zone_transfers.delete_request(parsed_args.id)
 
-        LOG.info('Zone Transfer %s was deleted' % parsed_args.id)
+        LOG.info('Zone Transfer %s was deleted', parsed_args.id)
 
 
-class AcceptTransferRequestCommand(command.Command):
+class AcceptTransferRequestCommand(show.ShowOne):
     """Accept a Zone Transfer Request"""
 
     def get_parser(self, prog_name):
@@ -381,7 +400,7 @@ class AcceptTransferRequestCommand(command.Command):
 
         data = client.zone_transfers.accept_request(
             parsed_args.transfer_id, parsed_args.key)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class ShowTransferAcceptCommand(show.ShowOne):
@@ -399,4 +418,4 @@ class ShowTransferAcceptCommand(show.ShowOne):
 
         data = client.zone_transfers.get_accept(parsed_args.id)
 
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))

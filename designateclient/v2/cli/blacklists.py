@@ -22,6 +22,7 @@ from cliff import show
 import six
 
 from designateclient import utils
+from designateclient.v2.utils import get_all
 
 LOG = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class ListBlacklistsCommand(lister.Lister):
         client = self.app.client_manager.dns
 
         cols = self.columns
-        data = client.blacklists.list()
+        data = get_all(client.blacklists.list)
         return cols, (utils.get_item_properties(s, cols) for s in data)
 
 
@@ -58,7 +59,7 @@ class ShowBlacklistCommand(show.ShowOne):
         client = self.app.client_manager.dns
         data = client.blacklists.get(parsed_args.id)
         _format_blacklist(data)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class CreateBlacklistCommand(show.ShowOne):
@@ -80,7 +81,7 @@ class CreateBlacklistCommand(show.ShowOne):
             parsed_args.pattern, parsed_args.description)
 
         _format_blacklist(data)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class SetBlacklistCommand(show.ShowOne):
@@ -90,8 +91,8 @@ class SetBlacklistCommand(show.ShowOne):
         parser = super(SetBlacklistCommand, self).get_parser(prog_name)
 
         parser.add_argument('id', help="Blacklist ID")
-        parser.add_argument('--pattern', help="Blacklist pattern",
-                            required=True)
+        parser.add_argument('--pattern', help="Blacklist pattern")
+
         description_group = parser.add_mutually_exclusive_group()
         description_group.add_argument('--description', help="Description")
         description_group.add_argument('--no-description', action='store_true')
@@ -114,7 +115,7 @@ class SetBlacklistCommand(show.ShowOne):
         updated = client.blacklists.update(parsed_args.id, data)
 
         _format_blacklist(updated)
-        return zip(*sorted(six.iteritems(updated)))
+        return six.moves.zip(*sorted(six.iteritems(updated)))
 
 
 class DeleteBlacklistCommand(command.Command):

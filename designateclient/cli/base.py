@@ -32,9 +32,11 @@ class Command(CliffCommand):
         self.client = Client(
             region_name=self.app.options.os_region_name,
             service_type=self.app.options.os_service_type,
+            endpoint_type=self.app.options.os_endpoint_type,
             session=self.app.session,
             all_tenants=self.app.options.all_tenants,
-            edit_managed=self.app.options.edit_managed)
+            edit_managed=self.app.options.edit_managed,
+            endpoint=self.app.options.os_endpoint)
 
         try:
             return super(Command, self).run(parsed_args)
@@ -52,7 +54,7 @@ class Command(CliffCommand):
 
             self.error_output(parsed_args, columns, values)
         except ks_exceptions.EndpointNotFound as e:
-            self.app.log.error('No endpoint was found. You must provide a'
+            self.app.log.error('No endpoint was found. You must provide a '
                                'username or user id via --os-username, '
                                '--os-user-id, env[OS_USERNAME] or '
                                'env[OS_USER_ID]')

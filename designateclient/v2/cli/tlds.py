@@ -22,6 +22,7 @@ from cliff import show
 import six
 
 from designateclient import utils
+from designateclient.v2.utils import get_all
 
 LOG = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class ListTLDsCommand(lister.Lister):
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
 
-        data = client.tlds.list()
+        data = get_all(client.tlds.list)
 
         cols = self.columns
         return cols, (utils.get_item_properties(s, cols) for s in data)
@@ -59,7 +60,7 @@ class ShowTLDCommand(show.ShowOne):
         client = self.app.client_manager.dns
         data = client.tlds.get(parsed_args.id)
         _format_tld(data)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class CreateTLDCommand(show.ShowOne):
@@ -77,7 +78,7 @@ class CreateTLDCommand(show.ShowOne):
         client = self.app.client_manager.dns
         data = client.tlds.create(parsed_args.name, parsed_args.description)
         _format_tld(data)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class SetTLDCommand(show.ShowOne):
@@ -109,7 +110,7 @@ class SetTLDCommand(show.ShowOne):
 
         data = client.tlds.update(parsed_args.id, data)
         _format_tld(data)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class DeleteTLDCommand(command.Command):

@@ -22,6 +22,7 @@ from cliff import show
 import six
 
 from designateclient import utils
+from designateclient.v2.utils import get_all
 
 LOG = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class ListFloatingIPCommand(lister.Lister):
         client = self.app.client_manager.dns
 
         cols = self.columns
-        data = client.floatingips.list()
+        data = get_all(client.floatingips.list)
         return cols, (utils.get_item_properties(s, cols) for s in data)
 
 
@@ -58,7 +59,7 @@ class ShowFloatingIPCommand(show.ShowOne):
         client = self.app.client_manager.dns
         data = client.floatingips.get(parsed_args.floatingip_id)
         _format_floatingip(data)
-        return zip(*sorted(six.iteritems(data)))
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class SetFloatingIPCommand(show.ShowOne):
@@ -102,7 +103,7 @@ class SetFloatingIPCommand(show.ShowOne):
             parsed_args.ttl)
 
         _format_floatingip(fip)
-        return zip(*sorted(six.iteritems(fip)))
+        return six.moves.zip(*sorted(six.iteritems(fip)))
 
 
 class UnsetFloatingIPCommand(command.Command):
@@ -118,4 +119,4 @@ class UnsetFloatingIPCommand(command.Command):
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
         client.floatingips.unset(parsed_args.floatingip_id)
-        LOG.info('FloatingIP PTR %s was unset' % parsed_args.floatingip_id)
+        LOG.info('FloatingIP PTR %s was unset', parsed_args.floatingip_id)
