@@ -20,6 +20,10 @@ override_dh_auto_install:
 			--root $(CURDIR)/debian/python3-designateclient; \
 	done
 	rm -f $(CURDIR)/debian/python*/usr/lib/python*/dist-packages/*.pth
+	install -d $(CURDIR)/debian/python-designateclient/usr/lib/python2.7/dist-packages/designateclient/resources/schemas/v1/
+	install -d $(CURDIR)/debian/python3-designateclient/usr/lib/python3/dist-packages/designateclient/resources/schemas/v1/
+	install -D -m 0644 designateclient/resources/schemas/v1/* $(CURDIR)/debian/python-designateclient/usr/lib/python2.7/dist-packages/designateclient/resources/schemas/v1/
+	install -D -m 0644 designateclient/resources/schemas/v1/* $(CURDIR)/debian/python3-designateclient/usr/lib/python3/dist-packages/designateclient/resources/schemas/v1/
 	mv $(CURDIR)/debian/python-designateclient/usr/bin/designate $(CURDIR)/debian/python-designateclient/usr/bin/python2-designate
 	mv $(CURDIR)/debian/python3-designateclient/usr/bin/designate $(CURDIR)/debian/python3-designateclient/usr/bin/python3-designate
 

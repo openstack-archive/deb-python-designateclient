@@ -6,8 +6,9 @@ python-designateclient (2.0.0-1) UNRELEASED; urgency=medium
 
   [ Corey Bryant ]
   * d/control: Update uploaders.
+  * d/rules: Install missing json files.
 
- -- Corey Bryant <corey.bryant@canonical.com>  Mon, 22 Feb 2016 10:41:36 -0500
+ -- Corey Bryant <corey.bryant@canonical.com>  Fri, 26 Feb 2016 12:48:15 -0500
 
 python-designateclient (1.5.0-4) unstable; urgency=medium
 
