@@ -1,4 +1,4 @@
-python-designateclient (2.0.0-1) UNRELEASED; urgency=medium
+python-designateclient (2.0.0-1) experimental; urgency=medium
 
   [ David Della Vecchia ]
   * New upstream release.
@@ -8,7 +8,10 @@ python-designateclient (2.0.0-1) UNRELEASED; urgency=medium
   * d/control: Update uploaders.
   * d/rules: Install missing json files.
 
- -- Corey Bryant <corey.bryant@canonical.com>  Fri, 26 Feb 2016 12:48:15 -0500
+  [ Thomas Goirand ]
+  * Standards-Version: 3.9.7 (no change).
+
+ -- Thomas Goirand <zigo@debian.org>  Thu, 03 Mar 2016 03:27:38 +0000
 
 python-designateclient (1.5.0-4) unstable; urgency=medium
 
