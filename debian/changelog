@@ -1,3 +1,9 @@
+python-designateclient (2.1.0-1) experimental; urgency=medium
+
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Sat, 02 Apr 2016 15:11:33 +0200
+
 python-designateclient (2.0.0-1) experimental; urgency=medium
 
   [ David Della Vecchia ]
