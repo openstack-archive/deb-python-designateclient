@@ -1,0 +1,8 @@
+Code-Review+2: Graham Hayes <graham.hayes@hpe.com>
+Workflow+1: Kiall Mac Innes <kiall@macinnes.ie>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 10 Mar 2016 19:01:12 +0000
+Reviewed-on: https://review.openstack.org/291333
+Project: openstack/deb-python-designateclient
+Branch: refs/heads/stable/mitaka

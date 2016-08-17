@@ -1,0 +1,9 @@
+Code-Review+2: Tim Simmons <tim.simmons@rackspace.com>
+Code-Review+2: Eric Larson <eric.larson@rackspace.com>
+Workflow+1: Eric Larson <eric.larson@rackspace.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 29 Mar 2016 16:25:31 +0000
+Reviewed-on: https://review.openstack.org/298801
+Project: openstack/deb-python-designateclient
+Branch: refs/heads/stable/mitaka
