@@ -1,0 +1,11 @@
+Code-Review+1: Paul Glass <paul.glass@rackspace.com>
+Code-Review+1: Sabeen <sabeen.syed@rackspace.com>
+Code-Review+2: Kiall Mac Innes <kiall@macinnes.ie>
+Code-Review+2: Tim Simmons <tim.simmons@rackspace.com>
+Workflow+1: Tim Simmons <tim.simmons@rackspace.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 04 Mar 2016 20:27:56 +0000
+Reviewed-on: https://review.openstack.org/288614
+Project: openstack/deb-python-designateclient
+Branch: refs/heads/master

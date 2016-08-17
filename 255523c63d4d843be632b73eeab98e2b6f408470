@@ -1,0 +1,10 @@
+Code-Review+1: Rahman Syed <rahman.syed@gmail.com>
+Code-Review+2: Eric Larson <eric.larson@rackspace.com>
+Code-Review+2: Kiall Mac Innes <kiall@macinnes.ie>
+Workflow+1: Kiall Mac Innes <kiall@macinnes.ie>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 29 Mar 2016 17:06:17 +0000
+Reviewed-on: https://review.openstack.org/298730
+Project: openstack/deb-python-designateclient
+Branch: refs/heads/master

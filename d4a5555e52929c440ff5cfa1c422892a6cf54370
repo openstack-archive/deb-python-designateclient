@@ -1,0 +1,10 @@
+Code-Review+2: Graham Hayes <graham.hayes@hpe.com>
+Code-Review+1: sonu <sonu.kumar@nectechnologies.in>
+Code-Review+2: Kiall Mac Innes <kiall@macinnes.ie>
+Workflow+1: Kiall Mac Innes <kiall@macinnes.ie>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 21 Apr 2016 17:59:08 +0000
+Reviewed-on: https://review.openstack.org/308050
+Project: openstack/deb-python-designateclient
+Branch: refs/heads/master

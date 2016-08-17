@@ -1,0 +1,8 @@
+Code-Review+2: Kiall Mac Innes <kiall@macinnes.ie>
+Workflow+1: Kiall Mac Innes <kiall@macinnes.ie>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 26 May 2016 20:04:54 +0000
+Reviewed-on: https://review.openstack.org/321717
+Project: openstack/deb-python-designateclient
+Branch: refs/heads/master
