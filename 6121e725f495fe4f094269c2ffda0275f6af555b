@@ -1,0 +1,9 @@
+Code-Review+1: venkatamahesh <Venkata.Kotha@infinite.com>
+Code-Review+2: Kiall Mac Innes <kiall@macinnes.ie>
+Workflow+1: Kiall Mac Innes <kiall@macinnes.ie>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 23 Sep 2015 07:47:01 +0000
+Reviewed-on: https://review.openstack.org/226521
+Project: openstack/deb-python-designateclient
+Branch: refs/heads/stable/liberty
