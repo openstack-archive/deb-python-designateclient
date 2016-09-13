@@ -16,14 +16,14 @@
 
 import logging
 
-from cliff import command
-from cliff import lister
-from cliff import show
-from openstackclient.common import exceptions as osc_exc
+from osc_lib.command import command
+from osc_lib import exceptions as osc_exc
 import six
 
 from designateclient import utils
+from designateclient.v2.cli import common
 from designateclient.v2.utils import get_all
+
 
 LOG = logging.getLogger(__name__)
 
@@ -33,7 +33,15 @@ def _format_zone(zone):
     zone['masters'] = ", ".join(zone['masters'])
 
 
-class ListZonesCommand(lister.Lister):
+def _format_zone_export_record(zone_export_record):
+    zone_export_record.pop('links', None)
+
+
+def _format_zone_import_record(zone_import_record):
+    zone_import_record.pop('links', None)
+
+
+class ListZonesCommand(command.Lister):
     """List zones"""
 
     columns = ['id', 'name', 'type', 'serial', 'status', 'action']
@@ -50,10 +58,15 @@ class ListZonesCommand(lister.Lister):
                             required=False)
         parser.add_argument('--status', help="Zone Status", required=False)
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        common.set_all_common_headers(client, parsed_args)
 
         criterion = {}
         if parsed_args.type is not None:
@@ -77,10 +90,14 @@ class ListZonesCommand(lister.Lister):
         data = get_all(client.zones.list, criterion)
 
         cols = self.columns
+
+        if client.session.all_projects:
+            cols.insert(1, 'project_id')
+
         return cols, (utils.get_item_properties(s, cols) for s in data)
 
 
-class ShowZoneCommand(show.ShowOne):
+class ShowZoneCommand(command.ShowOne):
     """Show zone details"""
 
     def get_parser(self, prog_name):
@@ -88,10 +105,13 @@ class ShowZoneCommand(show.ShowOne):
 
         parser.add_argument('id', help="Zone ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = client.zones.get(parsed_args.id)
 
@@ -99,7 +119,7 @@ class ShowZoneCommand(show.ShowOne):
         return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class CreateZoneCommand(show.ShowOne):
+class CreateZoneCommand(command.ShowOne):
     """Create new zone"""
 
     def get_parser(self, prog_name):
@@ -112,10 +132,13 @@ class CreateZoneCommand(show.ShowOne):
         parser.add_argument('--description', help="Description")
         parser.add_argument('--masters', help="Zone Masters", nargs='+')
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         payload = {}
 
@@ -147,7 +170,7 @@ class CreateZoneCommand(show.ShowOne):
         return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class SetZoneCommand(show.ShowOne):
+class SetZoneCommand(command.ShowOne):
     """Set zone properties"""
 
     def get_parser(self, prog_name):
@@ -162,10 +185,13 @@ class SetZoneCommand(show.ShowOne):
 
         parser.add_argument('--masters', help="Zone Masters", nargs='+')
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = {}
 
@@ -189,7 +215,7 @@ class SetZoneCommand(show.ShowOne):
         return six.moves.zip(*sorted(six.iteritems(updated)))
 
 
-class DeleteZoneCommand(command.Command):
+class DeleteZoneCommand(command.ShowOne):
     """Delete zone"""
 
     def get_parser(self, prog_name):
@@ -197,44 +223,19 @@ class DeleteZoneCommand(command.Command):
 
         parser.add_argument('id', help="Zone ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
-        client.zones.delete(parsed_args.id)
+        common.set_all_common_headers(client, parsed_args)
+
+        data = client.zones.delete(parsed_args.id)
         LOG.info('Zone %s was deleted', parsed_args.id)
 
-
-class ExportZoneCommand(command.Command):
-    """Export a zone."""
-    def get_parser(self, prog_name):
-        parser = super(ExportZoneCommand, self).get_parser(prog_name)
-
-        parser.add_argument('id', help="Zone ID")
-
-        return parser
-
-    def take_action(self, parsed_args):
-        client = self.app.client_manager.dns
-        response, _ = client.zones.export(parsed_args.id)
-        print(response.content)
-
-
-class ImportZoneCommand(command.Command):
-    """Import a zone"""
-    def get_parser(self, prog_name):
-        parser = super(ImportZoneCommand, self).get_parser(prog_name)
-
-        parser.add_argument('--path', help="Path to zone file", required=True)
-
-        return parser
-
-    def take_action(self, parsed_args):
-        client = self.app.client_manager.dns
-
-        with open(parsed_args.path) as contents:
-            client.zones.import_(contents)
-            LOG.info("Imported zone successfully")
+        _format_zone(data)
+        return six.moves.zip(*sorted(six.iteritems(data)))
 
 
 class AbandonZoneCommand(command.Command):
@@ -244,10 +245,13 @@ class AbandonZoneCommand(command.Command):
 
         parser.add_argument('id', help="Zone ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         client.zones.abandon(parsed_args.id)
 
@@ -262,10 +266,13 @@ class AXFRZoneCommand(command.Command):
 
         parser.add_argument('id', help="Zone ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         client.zones.axfr(parsed_args.id)
 
@@ -273,7 +280,7 @@ class AXFRZoneCommand(command.Command):
                  {"zone_id": parsed_args.id})
 
 
-class CreateTransferRequestCommand(show.ShowOne):
+class CreateTransferRequestCommand(command.ShowOne):
     """Create new zone transfer request"""
 
     def get_parser(self, prog_name):
@@ -286,10 +293,13 @@ class CreateTransferRequestCommand(show.ShowOne):
             help="Target Project ID to transfer to.")
         parser.add_argument('--description', help="Description")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = client.zone_transfers.create_request(
             parsed_args.zone_id, parsed_args.target_project_id,
@@ -297,7 +307,7 @@ class CreateTransferRequestCommand(show.ShowOne):
         return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class ListTransferRequestsCommand(lister.Lister):
+class ListTransferRequestsCommand(command.Lister):
     """List Zone Transfer Requests"""
 
     columns = ['id', 'zone_id', 'zone_name', 'project_id',
@@ -307,10 +317,13 @@ class ListTransferRequestsCommand(lister.Lister):
         parser = super(ListTransferRequestsCommand, self).get_parser(
             prog_name)
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = client.zone_transfers.list_requests()
 
@@ -318,7 +331,7 @@ class ListTransferRequestsCommand(lister.Lister):
         return cols, (utils.get_item_properties(s, cols) for s in data)
 
 
-class ShowTransferRequestCommand(show.ShowOne):
+class ShowTransferRequestCommand(command.ShowOne):
     """Show Zone Transfer Request Details"""
 
     def get_parser(self, prog_name):
@@ -326,17 +339,20 @@ class ShowTransferRequestCommand(show.ShowOne):
 
         parser.add_argument('id', help="Zone Tranfer Request ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = client.zone_transfers.get_request(parsed_args.id)
 
         return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class SetTransferRequestCommand(show.ShowOne):
+class SetTransferRequestCommand(command.ShowOne):
     """Set a Zone Transfer Request"""
 
     def get_parser(self, prog_name):
@@ -347,10 +363,13 @@ class SetTransferRequestCommand(show.ShowOne):
         description_group.add_argument('--description', help="Description")
         description_group.add_argument('--no-description', action='store_true')
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = {}
 
@@ -371,17 +390,20 @@ class DeleteTransferRequestCommand(command.Command):
 
         parser.add_argument('id', help="Zone Transfer Request ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         client.zone_transfers.delete_request(parsed_args.id)
 
         LOG.info('Zone Transfer %s was deleted', parsed_args.id)
 
 
-class AcceptTransferRequestCommand(show.ShowOne):
+class AcceptTransferRequestCommand(command.ShowOne):
     """Accept a Zone Transfer Request"""
 
     def get_parser(self, prog_name):
@@ -393,17 +415,44 @@ class AcceptTransferRequestCommand(show.ShowOne):
         parser.add_argument('--key', help="Transfer Key", type=str,
                             required=True)
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = client.zone_transfers.accept_request(
             parsed_args.transfer_id, parsed_args.key)
         return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class ShowTransferAcceptCommand(show.ShowOne):
+class ListTransferAcceptsCommand(command.Lister):
+    """List Zone Transfer Accepts"""
+
+    columns = ['id', 'zone_id', 'project_id',
+               'zone_transfer_request_id', 'status', 'key']
+
+    def get_parser(self, prog_name):
+        parser = super(ListTransferAcceptsCommand, self).get_parser(
+            prog_name)
+
+        common.add_all_common_options(parser)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        data = client.zone_transfers.list_requests()
+
+        cols = self.columns
+        return cols, (utils.get_item_properties(s, cols) for s in data)
+
+
+class ShowTransferAcceptCommand(command.ShowOne):
     """Show Zone Transfer Accept"""
 
     def get_parser(self, prog_name):
@@ -411,11 +460,241 @@ class ShowTransferAcceptCommand(show.ShowOne):
 
         parser.add_argument('id', help="Zone Tranfer Accept ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = client.zone_transfers.get_accept(parsed_args.id)
 
         return six.moves.zip(*sorted(six.iteritems(data)))
+
+
+class ExportZoneCommand(command.ShowOne):
+    """Export a Zone"""
+
+    def get_parser(self, prog_name):
+        parser = super(ExportZoneCommand, self).get_parser(
+            prog_name)
+
+        common.add_all_common_options(parser)
+
+        parser.add_argument('zone_id', help="Zone ID", type=str)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        data = client.zone_exports.create(parsed_args.zone_id)
+        _format_zone_export_record(data)
+
+        LOG.info('Zone Export %s was created', data['id'])
+
+        return six.moves.zip(*sorted(six.iteritems(data)))
+
+
+class ListZoneExportsCommand(command.Lister):
+    """List Zone Exports"""
+
+    columns = [
+        'id',
+        'zone_id',
+        'created_at',
+        'status',
+    ]
+
+    def get_parser(self, prog_name):
+        parser = super(ListZoneExportsCommand, self).get_parser(
+            prog_name)
+
+        common.add_all_common_options(parser)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        data = client.zone_exports.list()
+
+        cols = self.columns
+        return cols, (utils.get_item_properties(s, cols)
+                      for s in data['exports'])
+
+
+class ShowZoneExportCommand(command.ShowOne):
+    """Show a Zone Export"""
+
+    def get_parser(self, prog_name):
+        parser = super(ShowZoneExportCommand, self).get_parser(
+            prog_name)
+
+        parser.add_argument('zone_export_id', help="Zone Export ID", type=str)
+
+        common.add_all_common_options(parser)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        data = client.zone_exports.get_export_record(
+            parsed_args.zone_export_id)
+        _format_zone_export_record(data)
+
+        return six.moves.zip(*sorted(six.iteritems(data)))
+
+
+class DeleteZoneExportCommand(command.Command):
+    """Delete a Zone Export"""
+
+    def get_parser(self, prog_name):
+        parser = super(DeleteZoneExportCommand, self).get_parser(
+            prog_name)
+
+        parser.add_argument('zone_export_id', help="Zone Export ID", type=str)
+
+        common.add_all_common_options(parser)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        client.zone_exports.delete(parsed_args.zone_export_id)
+
+        LOG.info('Zone Export %s was deleted', parsed_args.zone_export_id)
+
+
+class ShowZoneExportFileCommand(command.ShowOne):
+    """Show the zone file for the Zone Export"""
+
+    def get_parser(self, prog_name):
+        parser = super(ShowZoneExportFileCommand, self).get_parser(
+            prog_name)
+
+        parser.add_argument('zone_export_id', help="Zone Export ID", type=str)
+
+        common.add_all_common_options(parser)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        data = client.zone_exports.get_export(parsed_args.zone_export_id)
+
+        return ['data'], [data]
+
+
+class ImportZoneCommand(command.ShowOne):
+    """Import a Zone from a file on the filesystem"""
+
+    def get_parser(self, prog_name):
+        parser = super(ImportZoneCommand, self).get_parser(
+            prog_name)
+
+        parser.add_argument('zone_file_path',
+                            help="Path to a zone file", type=str)
+
+        common.add_all_common_options(parser)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        with open(parsed_args.zone_file_path, 'r') as f:
+            zone_file_contents = f.read()
+
+        data = client.zone_imports.create(zone_file_contents)
+        _format_zone_import_record(data)
+
+        LOG.info('Zone Import %s was created', data['id'])
+
+        return six.moves.zip(*sorted(six.iteritems(data)))
+
+
+class ListZoneImportsCommand(command.Lister):
+    """List Zone Imports"""
+
+    columns = [
+        'id',
+        'zone_id',
+        'created_at',
+        'status',
+        'message',
+    ]
+
+    def get_parser(self, prog_name):
+        parser = super(ListZoneImportsCommand, self).get_parser(
+            prog_name)
+
+        common.add_all_common_options(parser)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        data = client.zone_imports.list()
+
+        cols = self.columns
+        return cols, (utils.get_item_properties(s, cols)
+                      for s in data['imports'])
+
+
+class ShowZoneImportCommand(command.ShowOne):
+    """Show a Zone Import"""
+
+    def get_parser(self, prog_name):
+        parser = super(ShowZoneImportCommand, self).get_parser(
+            prog_name)
+
+        parser.add_argument('zone_import_id', help="Zone Import ID", type=str)
+
+        common.add_all_common_options(parser)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        data = client.zone_imports.get_import_record(
+            parsed_args.zone_import_id)
+        _format_zone_import_record(data)
+
+        return six.moves.zip(*sorted(six.iteritems(data)))
+
+
+class DeleteZoneImportCommand(command.Command):
+    """Delete a Zone Import"""
+
+    def get_parser(self, prog_name):
+        parser = super(DeleteZoneImportCommand, self).get_parser(
+            prog_name)
+
+        parser.add_argument('zone_import_id', help="Zone Import ID", type=str)
+
+        common.add_all_common_options(parser)
+
+        return parser
+
+    def take_action(self, parsed_args):
+        client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        client.zone_imports.delete(parsed_args.zone_import_id)
+
+        LOG.info('Zone Import %s was deleted', parsed_args.zone_import_id)

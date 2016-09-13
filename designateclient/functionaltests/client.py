@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
+import os
 
 from tempest_lib.cli import base
 
@@ -78,7 +79,8 @@ class ZoneCommands(object):
                                **kwargs)
 
     def zone_delete(self, id, *args, **kwargs):
-        return self.parsed_cmd('zone delete %s' % id, *args, **kwargs)
+        return self.parsed_cmd('zone delete %s' % id, FieldValueModel, *args,
+                               **kwargs)
 
     def zone_create(self, name, email=None, ttl=None, description=None,
                     type=None, masters=None, *args, **kwargs):
@@ -148,6 +150,51 @@ class ZoneTransferCommands(object):
         return self.parsed_cmd(cmd, FieldValueModel, *args, **kwargs)
 
 
+class ZoneExportCommands(object):
+    """A mixin for DesignateCLI to add zone export commands"""
+
+    def zone_export_list(self, *args, **kwargs):
+        cmd = 'zone export list'
+        return self.parsed_cmd(cmd, ListModel, *args, **kwargs)
+
+    def zone_export_create(self, zone_id, *args, **kwargs):
+        cmd = 'zone export create {0}'.format(
+            zone_id)
+        return self.parsed_cmd(cmd, FieldValueModel, *args, **kwargs)
+
+    def zone_export_show(self, zone_export_id, *args, **kwargs):
+        cmd = 'zone export show {0}'.format(zone_export_id)
+        return self.parsed_cmd(cmd, FieldValueModel, *args, **kwargs)
+
+    def zone_export_delete(self, zone_export_id, *args, **kwargs):
+        cmd = 'zone export delete {0}'.format(zone_export_id)
+        return self.parsed_cmd(cmd, *args, **kwargs)
+
+    def zone_export_showfile(self, zone_export_id, *args, **kwargs):
+        cmd = 'zone export showfile {0}'.format(zone_export_id)
+        return self.parsed_cmd(cmd, FieldValueModel, *args, **kwargs)
+
+
+class ZoneImportCommands(object):
+    """A mixin for DesignateCLI to add zone import commands"""
+
+    def zone_import_list(self, *args, **kwargs):
+        cmd = 'zone import list'
+        return self.parsed_cmd(cmd, ListModel, *args, **kwargs)
+
+    def zone_import_create(self, zone_file_path, *args, **kwargs):
+        cmd = 'zone import create {0}'.format(zone_file_path)
+        return self.parsed_cmd(cmd, FieldValueModel, *args, **kwargs)
+
+    def zone_import_show(self, zone_import_id, *args, **kwargs):
+        cmd = 'zone import show {0}'.format(zone_import_id)
+        return self.parsed_cmd(cmd, FieldValueModel, *args, **kwargs)
+
+    def zone_import_delete(self, zone_import_id, *args, **kwargs):
+        cmd = 'zone import delete {0}'.format(zone_import_id)
+        return self.parsed_cmd(cmd, *args, **kwargs)
+
+
 class RecordsetCommands(object):
 
     def recordset_show(self, zone_id, id, *args, **kwargs):
@@ -188,7 +235,7 @@ class RecordsetCommands(object):
 
     def recordset_delete(self, zone_id, id, *args, **kwargs):
         cmd = 'recordset delete {0} {1}'.format(zone_id, id)
-        return self.parsed_cmd(cmd, *args, **kwargs)
+        return self.parsed_cmd(cmd, FieldValueModel, *args, **kwargs)
 
 
 class TLDCommands(object):
@@ -243,7 +290,7 @@ class BlacklistCommands(object):
             '--pattern': pattern,
             '--description': description,
         })
-        flags_str = build_flags_string({'--no_description': no_description})
+        flags_str = build_flags_string({'--no-description': no_description})
         cmd = 'zone blacklist set {0} {1} {2}'.format(id, options_str,
                                                       flags_str)
         return self.parsed_cmd(cmd, FieldValueModel, *args, **kwargs)
@@ -258,7 +305,8 @@ class BlacklistCommands(object):
 
 
 class DesignateCLI(base.CLIClient, ZoneCommands, ZoneTransferCommands,
-                   RecordsetCommands, TLDCommands, BlacklistCommands):
+                   ZoneExportCommands, ZoneImportCommands, RecordsetCommands,
+                   TLDCommands, BlacklistCommands):
 
     # instantiate this once to minimize requests to keystone
     _CLIENTS = None
@@ -266,8 +314,12 @@ class DesignateCLI(base.CLIClient, ZoneCommands, ZoneTransferCommands,
     def __init__(self, *args, **kwargs):
         super(DesignateCLI, self).__init__(*args, **kwargs)
         # grab the project id. this is used for zone transfer requests
-        resp = FieldValueModel(self.keystone('token-get'))
-        self.project_id = resp.tenant_id
+        resp = FieldValueModel(self.openstack('token issue'))
+        self.project_id = resp.project_id
+
+    @property
+    def using_auth_override(self):
+        return bool(cfg.CONF.identity.override_endpoint)
 
     @classmethod
     def get_clients(cls):
@@ -309,8 +361,24 @@ class DesignateCLI(base.CLIClient, ZoneCommands, ZoneTransferCommands,
         raise Exception("User '{0}' does not exist".format(user))
 
     def parsed_cmd(self, cmd, model=None, *args, **kwargs):
-        out = self.openstack(cmd, *args, **kwargs)
+        if self.using_auth_override:
+            # use --os-url and --os-token
+            func = self._openstack_noauth
+        else:
+            # use --os-username --os-tenant-name --os-password --os-auth-url
+            func = self.openstack
+
+        out = func(cmd, *args, **kwargs)
         LOG.debug(out)
         if model is not None:
             return model(out)
         return out
+
+    def _openstack_noauth(self, cmd, *args, **kwargs):
+        exe = os.path.join(cfg.CONF.designateclient.directory, 'openstack')
+        options = build_option_string({
+            '--os-url': cfg.CONF.identity.override_endpoint,
+            '--os-token': cfg.CONF.identity.override_token,
+        })
+        cmd = options + " " + cmd
+        return base.execute(exe, cmd, *args, **kwargs)

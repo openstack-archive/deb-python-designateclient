@@ -14,11 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+import warnings
 
-from cliff.command import Command as CliffCommand
-from cliff.lister import Lister
-from cliff.show import ShowOne
-from keystoneclient import exceptions as ks_exceptions
+from keystoneauth1 import exceptions as ks_exceptions
+from osc_lib.command import command
 import six
 
 from designateclient import exceptions
@@ -27,8 +26,19 @@ from designateclient.v1 import Client
 
 
 @six.add_metaclass(abc.ABCMeta)
-class Command(CliffCommand):
+class Command(command.Command):
     def run(self, parsed_args):
+
+        warnings.simplefilter('once', category=DeprecationWarning)
+        warnings.warn(
+            'The "designate" CLI is being deprecated in favour of the '
+            '"openstack" CLI plugin. All designate API v2 commands are '
+            'implemented there. When the v1 API is removed this CLI will '
+            'stop functioning',
+            DeprecationWarning)
+        warnings.resetwarnings()
+        warnings.simplefilter('ignore', category=DeprecationWarning)
+
         self.client = Client(
             region_name=self.app.options.os_region_name,
             service_type=self.app.options.os_service_type,
@@ -37,7 +47,7 @@ class Command(CliffCommand):
             all_tenants=self.app.options.all_tenants,
             edit_managed=self.app.options.edit_managed,
             endpoint=self.app.options.os_endpoint)
-
+        warnings.resetwarnings()
         try:
             return super(Command, self).run(parsed_args)
         except exceptions.RemoteError as e:
@@ -97,7 +107,7 @@ class Command(CliffCommand):
         return utils.find_resourceid_by_name_or_id(resource_client, name_or_id)
 
 
-class ListCommand(Command, Lister):
+class ListCommand(Command, command.Lister):
     columns = None
 
     def post_execute(self, results):
@@ -109,21 +119,21 @@ class ListCommand(Command, Lister):
             return [], ()
 
 
-class GetCommand(Command, ShowOne):
+class GetCommand(Command, command.ShowOne):
     def post_execute(self, results):
         return list(six.iterkeys(results)), list(six.itervalues(results))
 
 
-class CreateCommand(Command, ShowOne):
+class CreateCommand(Command, command.ShowOne):
     def post_execute(self, results):
         return list(six.iterkeys(results)), list(six.itervalues(results))
 
 
-class UpdateCommand(Command, ShowOne):
+class UpdateCommand(Command, command.ShowOne):
     def post_execute(self, results):
         return list(six.iterkeys(results)), list(six.itervalues(results))
 
 
-class DeleteCommand(Command, ShowOne):
+class DeleteCommand(Command, command.ShowOne):
     def post_execute(self, results):
         return [], []

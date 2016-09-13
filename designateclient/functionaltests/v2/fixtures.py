@@ -14,9 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from __future__ import absolute_import
+from __future__ import print_function
+import sys
+import tempfile
+import traceback
 
 import fixtures
 from tempest_lib.exceptions import CommandFailed
+from testtools.runtest import MultipleExceptions
 
 from designateclient.functionaltests.client import DesignateCLI
 
@@ -29,6 +34,20 @@ class BaseFixture(fixtures.Fixture):
         self.args = args
         self.kwargs = kwargs
         self.client = DesignateCLI.as_user(user)
+
+    def setUp(self):
+        # Sometimes, exceptions are raised in _setUp methods on fixtures.
+        # testtools pushes the exception into a MultipleExceptions object along
+        # with an artificial SetupError, which produces bad error messages.
+        # This just logs those stack traces to stderr for easier debugging.
+        try:
+            super(BaseFixture, self).setUp()
+        except MultipleExceptions as e:
+            for i, exc_info in enumerate(e.args):
+                print('--- printing MultipleExceptions traceback {} of {} ---'
+                      .format(i + 1, len(e.args)), file=sys.stderr)
+                traceback.print_exception(*exc_info)
+            raise
 
 
 class ZoneFixture(BaseFixture):
@@ -76,6 +95,63 @@ class TransferRequestFixture(BaseFixture):
     def cleanup_transfer_request(cls, client, transfer_request_id):
         try:
             client.zone_transfer_request_delete(transfer_request_id)
+        except CommandFailed:
+            pass
+
+
+class ExportFixture(BaseFixture):
+    """See DesignateCLI.zone_export_create for __init__ args"""
+
+    def __init__(self, zone, user='default', *args, **kwargs):
+        super(ExportFixture, self).__init__(user, *args, **kwargs)
+        self.zone = zone
+
+    def _setUp(self):
+        super(ExportFixture, self)._setUp()
+        self.zone_export = self.client.zone_export_create(
+            zone_id=self.zone.id,
+            *self.args, **self.kwargs
+        )
+        self.addCleanup(self.cleanup_zone_export, self.client,
+                        self.zone_export.id)
+        self.addCleanup(ZoneFixture.cleanup_zone, self.client, self.zone.id)
+
+    @classmethod
+    def cleanup_zone_export(cls, client, zone_export_id):
+        try:
+            client.zone_export_delete(zone_export_id)
+        except CommandFailed:
+            pass
+
+
+class ImportFixture(BaseFixture):
+    """See DesignateCLI.zone_import_create for __init__ args"""
+
+    def __init__(self, zone_file_contents, user='default', *args, **kwargs):
+        super(ImportFixture, self).__init__(user, *args, **kwargs)
+        self.zone_file_contents = zone_file_contents
+
+    def _setUp(self):
+        super(ImportFixture, self)._setUp()
+
+        with tempfile.NamedTemporaryFile() as f:
+            f.write(self.zone_file_contents)
+            f.flush()
+
+            self.zone_import = self.client.zone_import_create(
+                zone_file_path=f.name,
+                *self.args, **self.kwargs
+            )
+
+        self.addCleanup(self.cleanup_zone_import, self.client,
+                        self.zone_import.id)
+        self.addCleanup(ZoneFixture.cleanup_zone, self.client,
+                        self.zone_import.zone_id)
+
+    @classmethod
+    def cleanup_zone_import(cls, client, zone_import_id):
+        try:
+            client.zone_import_delete(zone_import_id)
         except CommandFailed:
             pass
 
