@@ -16,13 +16,13 @@
 
 import logging
 
-from cliff import command
-from cliff import lister
-from cliff import show
+from osc_lib.command import command
 import six
 
 from designateclient import utils
+from designateclient.v2.cli import common
 from designateclient.v2.utils import get_all
+
 
 LOG = logging.getLogger(__name__)
 
@@ -34,7 +34,15 @@ def _format_recordset(recordset):
     return recordset
 
 
-class ListRecordSetsCommand(lister.Lister):
+def _has_project_id(data):
+    if len(data) < 1:
+        return False
+    if 'project_id' in data[0]:
+        return True
+    return False
+
+
+class ListRecordSetsCommand(command.Lister):
     """List recordsets"""
 
     columns = ['id', 'name', 'type', 'records', 'status', 'action']
@@ -55,12 +63,38 @@ class ListRecordSetsCommand(lister.Lister):
         parser.add_argument('--action', help="RecordSet Action",
                             required=False)
 
-        parser.add_argument('zone_id', help="Zone ID")
+        parser.add_argument('zone_id', help="Zone ID. To list all"
+                            " recordsets specify 'all'")
+
+        common.add_all_common_options(parser)
 
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
+
+        criterion = {}
+        if parsed_args.type is not None:
+            criterion["type"] = parsed_args.type
+
+        if parsed_args.name is not None:
+            criterion["name"] = parsed_args.name
+
+        if parsed_args.data is not None:
+            criterion["data"] = parsed_args.data
+
+        if parsed_args.ttl is not None:
+            criterion["ttl"] = parsed_args.ttl
+
+        if parsed_args.description is not None:
+            criterion["description"] = parsed_args.description
+
+        if parsed_args.status is not None:
+            criterion["status"] = parsed_args.status
+
+        if parsed_args.action is not None:
+            criterion["action"] = parsed_args.action
 
         criterion = {}
         if parsed_args.type is not None:
@@ -86,8 +120,16 @@ class ListRecordSetsCommand(lister.Lister):
 
         cols = self.columns
 
-        data = get_all(client.recordsets.list, args=[parsed_args.zone_id],
-                       criterion=criterion)
+        if parsed_args.zone_id == 'all':
+            data = get_all(client.recordsets.list_all_zones,
+                           criterion=criterion)
+            cols.insert(2, 'zone_name')
+        else:
+            data = get_all(client.recordsets.list, args=[parsed_args.zone_id],
+                           criterion=criterion)
+
+        if client.session.all_projects and _has_project_id(data):
+            cols.insert(1, 'project_id')
 
         for i, rs in enumerate(data):
             data[i] = _format_recordset(rs)
@@ -95,7 +137,7 @@ class ListRecordSetsCommand(lister.Lister):
         return cols, (utils.get_item_properties(s, cols) for s in data)
 
 
-class ShowRecordSetCommand(show.ShowOne):
+class ShowRecordSetCommand(command.ShowOne):
     """Show recordset details"""
 
     def get_parser(self, prog_name):
@@ -104,17 +146,20 @@ class ShowRecordSetCommand(show.ShowOne):
         parser.add_argument('zone_id', help="Zone ID")
         parser.add_argument('id', help="RecordSet ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
         data = client.recordsets.get(parsed_args.zone_id, parsed_args.id)
 
         _format_recordset(data)
         return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class CreateRecordSetCommand(show.ShowOne):
+class CreateRecordSetCommand(command.ShowOne):
     """Create new recordset"""
 
     def get_parser(self, prog_name):
@@ -128,10 +173,13 @@ class CreateRecordSetCommand(show.ShowOne):
         parser.add_argument('--ttl', type=int, help="Time To Live (Seconds)")
         parser.add_argument('--description', help="Description")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = client.recordsets.create(
             parsed_args.zone_id,
@@ -145,7 +193,7 @@ class CreateRecordSetCommand(show.ShowOne):
         return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class SetRecordSetCommand(show.ShowOne):
+class SetRecordSetCommand(command.ShowOne):
     """Set recordset properties"""
 
     def get_parser(self, prog_name):
@@ -162,6 +210,8 @@ class SetRecordSetCommand(show.ShowOne):
         ttl_group = parser.add_mutually_exclusive_group()
         ttl_group.add_argument('--ttl', type=int, help="TTL")
         ttl_group.add_argument('--no-ttl', action='store_true')
+
+        common.add_all_common_options(parser)
 
         return parser
 
@@ -182,6 +232,7 @@ class SetRecordSetCommand(show.ShowOne):
             data['records'] = parsed_args.records
 
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         updated = client.recordsets.update(
             parsed_args.zone_id,
@@ -193,7 +244,7 @@ class SetRecordSetCommand(show.ShowOne):
         return six.moves.zip(*sorted(six.iteritems(updated)))
 
 
-class DeleteRecordSetCommand(command.Command):
+class DeleteRecordSetCommand(command.ShowOne):
     """Delete recordset"""
 
     def get_parser(self, prog_name):
@@ -202,10 +253,16 @@ class DeleteRecordSetCommand(command.Command):
         parser.add_argument('zone_id', help="Zone ID")
         parser.add_argument('id', help="RecordSet ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
-        client.recordsets.delete(parsed_args.zone_id, parsed_args.id)
+        common.set_all_common_headers(client, parsed_args)
+        data = client.recordsets.delete(parsed_args.zone_id, parsed_args.id)
 
         LOG.info('RecordSet %s was deleted', parsed_args.id)
+
+        _format_recordset(data)
+        return six.moves.zip(*sorted(six.iteritems(data)))

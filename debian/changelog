@@ -1,9 +1,19 @@
-python-designateclient (2.1.0-3) UNRELEASED; urgency=medium
+python-designateclient (2.3.0-1) experimental; urgency=medium
 
+  [ Ondřej Nový ]
   * Standards-Version is 3.9.8 now (no change)
   * d/rules: Removed UPSTREAM_GIT with default value
 
- -- Ondřej Nový <novy@ondrej.org>  Sat, 09 Apr 2016 19:26:29 +0200
+  [ Corey Bryant ]
+  * New upstream release.
+  * d/gbp.conf: Update debian-branch for Newton.
+  * d/control: Align (Build-)Depends with upstream.
+  * designateclient/v2/cli/recordsets.py: Update from upstream 2.3.0 version.
+
+  [ Thomas Goirand ]
+  * Using OpenStack's Gerrit as VCS URLs.
+
+ -- Thomas Goirand <zigo@debian.org>  Tue, 13 Sep 2016 09:58:13 +0200
 
 python-designateclient (2.1.0-2) unstable; urgency=medium
 

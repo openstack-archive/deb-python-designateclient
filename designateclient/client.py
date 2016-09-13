@@ -44,7 +44,10 @@ class Controller(object):
         }
 
     def _serialize(self, kwargs):
-        if 'data' in kwargs:
+        headers = kwargs.get('headers')
+        content_type = headers.get('Content-Type') if headers else None
+
+        if 'data' in kwargs and content_type in {None, 'application/json'}:
             kwargs['data'] = json.dumps(kwargs['data'])
 
     def _post(self, url, response_key=None, **kwargs):
@@ -77,8 +80,11 @@ class Controller(object):
             return body[response_key]
         return body
 
-    def _delete(self, url):
-        resp, body = self.client.session.delete(url)
+    def _delete(self, url, response_key=None, **kwargs):
+        resp, body = self.client.session.delete(url, **kwargs)
+        if response_key is not None:
+            return body[response_key]
+        return body
 
 
 @six.add_metaclass(abc.ABCMeta)

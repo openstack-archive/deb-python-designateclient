@@ -13,7 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from openstackclient.common import utils as oscutils
+
+from osc_lib import utils as oscutils
 
 from designateclient import shell
 
@@ -32,6 +33,7 @@ def make_client(instance):
         API_NAME, instance._api_version[API_NAME],
         API_VERSIONS)
     kwargs = oscutils.build_kwargs_dict('endpoint_type', instance._interface)
+
     return cls(session=instance.session,
                region_name=instance._region_name, **kwargs)
 

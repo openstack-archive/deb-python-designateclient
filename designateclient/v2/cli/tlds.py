@@ -16,13 +16,13 @@
 
 import logging
 
-from cliff import command
-from cliff import lister
-from cliff import show
+from osc_lib.command import command
 import six
 
 from designateclient import utils
+from designateclient.v2.cli import common
 from designateclient.v2.utils import get_all
+
 
 LOG = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def _format_tld(tld):
     tld.pop('links', None)
 
 
-class ListTLDsCommand(lister.Lister):
+class ListTLDsCommand(command.Lister):
     """List tlds"""
 
     columns = ['id', 'name', 'description']
@@ -44,10 +44,13 @@ class ListTLDsCommand(lister.Lister):
 
         parser.add_argument('--description', help="TLD Description")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = get_all(client.tlds.list)
 
@@ -55,7 +58,7 @@ class ListTLDsCommand(lister.Lister):
         return cols, (utils.get_item_properties(s, cols) for s in data)
 
 
-class ShowTLDCommand(show.ShowOne):
+class ShowTLDCommand(command.ShowOne):
     """Show tld details"""
 
     def get_parser(self, prog_name):
@@ -63,16 +66,19 @@ class ShowTLDCommand(show.ShowOne):
 
         parser.add_argument('id', help="TLD ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
         data = client.tlds.get(parsed_args.id)
         _format_tld(data)
         return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class CreateTLDCommand(show.ShowOne):
+class CreateTLDCommand(command.ShowOne):
     """Create new tld"""
 
     def get_parser(self, prog_name):
@@ -81,16 +87,19 @@ class CreateTLDCommand(show.ShowOne):
         parser.add_argument('--name', help="TLD Name", required=True)
         parser.add_argument('--description', help="Description")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
         data = client.tlds.create(parsed_args.name, parsed_args.description)
         _format_tld(data)
         return six.moves.zip(*sorted(six.iteritems(data)))
 
 
-class SetTLDCommand(show.ShowOne):
+class SetTLDCommand(command.ShowOne):
     """Set tld properties"""
 
     def get_parser(self, prog_name):
@@ -101,6 +110,8 @@ class SetTLDCommand(show.ShowOne):
         description_group = parser.add_mutually_exclusive_group()
         description_group.add_argument('--description', help="Description")
         description_group.add_argument('--no-description', action='store_true')
+
+        common.add_all_common_options(parser)
 
         return parser
 
@@ -116,6 +127,7 @@ class SetTLDCommand(show.ShowOne):
             data['description'] = parsed_args.description
 
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
 
         data = client.tlds.update(parsed_args.id, data)
         _format_tld(data)
@@ -130,10 +142,13 @@ class DeleteTLDCommand(command.Command):
 
         parser.add_argument('id', help="TLD ID")
 
+        common.add_all_common_options(parser)
+
         return parser
 
     def take_action(self, parsed_args):
         client = self.app.client_manager.dns
+        common.set_all_common_headers(client, parsed_args)
         client.tlds.delete(parsed_args.id)
 
         LOG.info('TLD %s was deleted', parsed_args.id)

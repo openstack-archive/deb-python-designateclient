@@ -69,13 +69,9 @@ class TestRecordset(BaseDesignateTest):
         self.assertEqual(self.recordset.zone_id, self.zone.id)
 
     def test_recordset_delete(self):
-        self.clients.recordset_delete(self.zone.id, self.recordset.id)
-        self.assertRaises(
-            CommandFailed,
-            self.clients.recordset_delete,
-            self.zone.id,
-            self.recordset.id,
-        )
+        rset = self.clients.recordset_delete(self.zone.id, self.recordset.id)
+        self.assertEqual(rset.action, 'DELETE')
+        self.assertEqual(rset.status, 'PENDING')
 
     def test_recordset_set(self):
         rset = self.clients.recordset_set(
@@ -102,11 +98,12 @@ class TestRecordset(BaseDesignateTest):
         self.assertEqual(rset.ttl, 'None')
 
 
-class TestRecordsetNegative(object):
+class TestRecordsetNegative(BaseDesignateTest):
 
     def test_invalid_option_on_recordset_create(self):
-        cmd = 'recordset create {0} aaa.{1} --type A --records 1.2.3.4 ' \
-            '--invalid "not valid"'.format(self.zone.id, self.zone.name)
+        cmd = 'recordset create de47d30b-41c5-4e38-b2c5-e0b908e19ec7 ' \
+            'aaa.desig.com. --type A --records 1.2.3.4 ' \
+            '--invalid "not valid"'
         self.assertRaises(CommandFailed, self.clients.openstack, cmd)
 
     def test_invalid_recordset_command(self):
