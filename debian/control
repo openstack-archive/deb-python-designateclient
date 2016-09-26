@@ -49,8 +49,8 @@ Build-Depends-Indep: python-cliff (>= 1.15.0),
                      subunit,
                      testrepository,
 Standards-Version: 3.9.8
-Vcs-Browser: https://git.openstack.org/cgit/openstack/deb-python-designateclient
-Vcs-Git: https://git.openstack.org/openstack/deb-python-designateclient
+Vcs-Browser: https://git.openstack.org/cgit/openstack/deb-python-designateclient?h=debian%2Fnewton
+Vcs-Git: https://git.openstack.org/openstack/deb-python-designateclient -b debian/newton
 Homepage: https://github.com/openstack/python-designateclient
 
 Package: python-designateclient
