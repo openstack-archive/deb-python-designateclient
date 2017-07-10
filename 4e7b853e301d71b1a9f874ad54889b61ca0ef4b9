@@ -1,0 +1,8 @@
+Code-Review+2: Tim Simmons <tim.r.simmons@gmail.com>
+Workflow+1: Tim Simmons <tim.r.simmons@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 10 Jul 2017 14:04:34 +0000
+Reviewed-on: https://review.openstack.org/482092
+Project: openstack/deb-python-designateclient
+Branch: refs/heads/master
